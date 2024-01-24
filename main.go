@@ -50,6 +50,7 @@ func main() {
 	}
 
 	activityNetwork := make(map[string]*Activity)
+
 	for i, activity := range activities {
 		activityNetwork[activity.Code] = &activities[i]
 	}
@@ -63,4 +64,17 @@ func main() {
 		}
 	}
 
+	//Critical Path Analysis
+	consideredActivities := make(map[string]bool)
+
+	for {
+		for _, activity := range activities {
+			for _, dependent := range activityNetwork[activity.Code].Dependencies {
+				consideredActivities[dependent.Code] = true
+			}
+		}
+		if len(consideredActivities) <= 0 {
+			break
+		}
+	}
 }
