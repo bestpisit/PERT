@@ -3,8 +3,60 @@
         "Code": "A",
         "Desc": "Flooring",
         "Duration": 7,
-        "Dependents": [
-            "A","B"
-        ]
+        "Dependents": []
+    },
+    {
+        "Code": "B",
+        "Desc": "Positioning doors",
+        "Duration": 2,
+        "Dependents": []
+    },
+    {
+        "Code": "C",
+        "Desc": "Plumbing",
+        "Duration": 15,
+        "Dependents": []
+    },
+    {
+        "Code": "D",
+        "Desc": "Electricity connecting",
+        "Duration": 8,
+        "Dependents": ["E"]
+    },
+    {
+        "Code": "E",
+        "Desc": "Building wall",
+        "Duration": 10,
+        "Dependents": ["A","B"]
+    },
+    {
+        "Code": "F",
+        "Desc": "Building ceiling",
+        "Duration": 2,
+        "Dependents": ["D","G"]
+    },
+    {
+        "Code": "G",
+        "Desc": "Building roof",
+        "Duration": 5,
+        "Dependents": ["E"]
+    },
+    {
+        "Code": "H",
+        "Desc": "Installing doors and windows",
+        "Duration": 8,
+        "Dependents": ["G"]
+    },
+    {
+        "Code": "I",
+        "Desc": "Connecting water pipe",
+        "Duration": 2,
+        "Dependents": ["C","F"]
+    },
+    {
+        "Code": "J",
+        "Desc": "Painting",
+        "Duration": 3,
+        "Dependents": ["I"]
     }
 ]
