@@ -1,26 +1,40 @@
 package main
 
 import (
-    "fmt"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"os"
 )
 
-type PERT struct {
-	Text string
+type Activitie struct {
+	Code string
+	Desc string
 	ES int
-	Time int
+	Duration int
 	EF int
 	LS int
 	Slack int
 	LF int
 	Edges []Edge
-	Dependencies []PERT
+	Dependencies []Activitie
+	Dependents []string
 }
 
 type Edge struct {
-	Src PERT
-	Dest PERT
+	Src Activitie
+	Dest Activitie
 }
 
 func main() {
-	fmt.Print("Hello")
+	fmt.Println("Loading project activities")
+	jsonFile, err := os.Open("BuildingAHouse.json")
+	if err != nil {
+		fmt.Print(err)
+	}
+	fmt.Println("Project activities Loaded")
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+	var activities []Activitie
+	json.Unmarshal(byteValue,&activities)
+	
 }
