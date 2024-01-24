@@ -50,9 +50,11 @@ func main() {
 	}
 
 	activityNetwork := make(map[string]*Activity)
+	leftActivities := make(map[string]bool)
 
 	for i, activity := range activities {
 		activityNetwork[activity.Code] = &activities[i]
+		leftActivities[activity.Code] = false
 	}
 
 	for _, activity := range activities {
@@ -64,16 +66,30 @@ func main() {
 		}
 	}
 
-	//Critical Path Analysis
-	consideredActivities := make(map[string]bool)
+	var edges []Edge
 
 	for {
-		for _, activity := range activities {
-			for _, dependent := range activityNetwork[activity.Code].Dependencies {
-				consideredActivities[dependent.Code] = true
+		for key := range leftActivities {
+			leftActivities[key] = false
+		}
+		for key := range leftActivities {
+			for _, dependent := range activityNetwork[key].Dependents {
+				_, exists := leftActivities[dependent]
+				if exists {
+					leftActivities[key] = true
+				}
 			}
 		}
-		if len(consideredActivities) <= 0 {
+		for key,val := range leftActivities {
+			if !val {
+				for _, dependent := range activityNetwork[key].Dependents {
+					edges = append(edges,Edge{dependent,key})
+					fmt.Println(edges)
+				}
+				delete(leftActivities,key)
+			}
+		}
+		if len(leftActivities) <= 0 {
 			break
 		}
 	}
