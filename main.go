@@ -50,11 +50,15 @@ func main() {
 	}
 
 	activityNetwork := make(map[string]*Activity)
+	activityNetwork["Start"] = &Activity{Code: "Start", Dependents: make([]string, 0)}
+	activityNetwork["End"] = &Activity{Code: "End", Dependents: make([]string, 0)}
 	leftActivities := make(map[string]bool)
+	endActivities := make(map[string]bool)
 
 	for i, activity := range activities {
 		activityNetwork[activity.Code] = &activities[i]
 		leftActivities[activity.Code] = false
+		endActivities[activity.Code] = false
 	}
 
 	for _, activity := range activities {
@@ -80,17 +84,39 @@ func main() {
 				}
 			}
 		}
-		for key,val := range leftActivities {
+		for key, val := range leftActivities {
 			if !val {
 				for _, dependent := range activityNetwork[key].Dependents {
-					edges = append(edges,Edge{dependent,key})
+					newEdge := Edge{dependent, key}
+					edges = append(edges, newEdge)
+					activityNetwork[key].Edges = append(activityNetwork[key].Edges, newEdge)
+					_, exists := endActivities[dependent]
+					if exists {
+						delete(endActivities, dependent)
+					}
 					fmt.Println(edges)
 				}
-				delete(leftActivities,key)
+				if len(activityNetwork[key].Dependents) == 0 {
+					newEdge := Edge{"Start", key}
+					edges = append(edges, newEdge)
+					activityNetwork[key].Edges = append(activityNetwork[key].Edges, newEdge)
+					fmt.Println(edges)
+				}
+				delete(leftActivities, key)
 			}
 		}
 		if len(leftActivities) <= 0 {
 			break
 		}
 	}
+	for key, _ := range endActivities {
+		newEdge := Edge{key, "End"}
+		edges = append(edges, newEdge)
+		activityNetwork[key].Edges = append(activityNetwork[key].Edges, newEdge)
+		fmt.Println(edges)
+	}
+}
+
+func PERT(activityNetwork map[string]*Activity) {
+
 }
