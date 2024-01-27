@@ -1,6 +1,7 @@
 package main
 
 import (
+	"container/list"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -10,15 +11,10 @@ import (
 type Activity struct {
 	Code         string
 	Desc         string
-	ES           int
-	Duration     int
-	EF           int
-	LS           int
-	Slack        int
-	LF           int
 	Edges        []Edge
 	Dependencies []Activity
 	Dependents   []string
+	Duration     int
 }
 
 type Edge struct {
@@ -89,18 +85,16 @@ func main() {
 				for _, dependent := range activityNetwork[key].Dependents {
 					newEdge := Edge{dependent, key}
 					edges = append(edges, newEdge)
-					activityNetwork[key].Edges = append(activityNetwork[key].Edges, newEdge)
+					activityNetwork[dependent].Edges = append(activityNetwork[dependent].Edges, newEdge)
 					_, exists := endActivities[dependent]
 					if exists {
 						delete(endActivities, dependent)
 					}
-					fmt.Println(edges)
 				}
 				if len(activityNetwork[key].Dependents) == 0 {
 					newEdge := Edge{"Start", key}
 					edges = append(edges, newEdge)
-					activityNetwork[key].Edges = append(activityNetwork[key].Edges, newEdge)
-					fmt.Println(edges)
+					activityNetwork["Start"].Edges = append(activityNetwork["Start"].Edges, newEdge)
 				}
 				delete(leftActivities, key)
 			}
@@ -113,10 +107,56 @@ func main() {
 		newEdge := Edge{key, "End"}
 		edges = append(edges, newEdge)
 		activityNetwork[key].Edges = append(activityNetwork[key].Edges, newEdge)
-		fmt.Println(edges)
 	}
+	fmt.Println(edges)
+	PERT(activityNetwork)
+}
+
+type ActivityCase struct {
+	activity *Activity
+	ES       int
+	Duration int
+	EF       int
+	LS       int
+	Slack    int
+	LF       int
 }
 
 func PERT(activityNetwork map[string]*Activity) {
+	queueCase := list.New()
+	startCase := &ActivityCase{activityNetwork["Start"], -1, activityNetwork["Start"].Duration, -1, -1, -1, -1}
+	queueCase.PushBack(startCase)
+	// startCase.activity.Dependents = append(startCase.activity.Dependents, "A")
+	activityCases := make(map[string]*ActivityCase)
+	for queueCase.Len() > 0 {
+		element := queueCase.Front()
+		currentCase := element.Value.(*ActivityCase)
+		queueCase.Remove(element)
+		_, exist := activityCases[currentCase.activity.Code]
+		if !exist {
+			activityCases[currentCase.activity.Code] = currentCase
+		} else {
+			currentCase = activityCases[currentCase.activity.Code]
+		}
+		//check parent
+		pass := true
+		if len(currentCase.activity.Dependents) > 0 {
+			for _, dependent := range currentCase.activity.Dependents {
+				parent, exist := activityCases[dependent]
+				if !exist || parent.EF == -1{
+					pass = false
+					break
+				}
+			}
+		} else { // means it start
+			currentCase.ES = 0
+		}
 
+		if pass { //branching
+			currentCase.EF = currentCase.ES + currentCase.Duration
+		} else { //revert
+			queueCase.PushBack(currentCase)
+		}
+		fmt.Println(currentCase.activity.Code)
+	}
 }
