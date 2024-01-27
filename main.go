@@ -106,6 +106,7 @@ func main() {
 	for key, _ := range endActivities {
 		newEdge := Edge{key, "End"}
 		edges = append(edges, newEdge)
+		activityNetwork["End"].Dependents = append(activityNetwork["End"].Dependents, key)
 		activityNetwork[key].Edges = append(activityNetwork[key].Edges, newEdge)
 	}
 	fmt.Println(edges)
@@ -126,13 +127,15 @@ func PERT(activityNetwork map[string]*Activity) {
 	queueCase := list.New()
 	startCase := &ActivityCase{activityNetwork["Start"], -1, activityNetwork["Start"].Duration, -1, -1, -1, -1}
 	queueCase.PushBack(startCase)
-	// startCase.activity.Dependents = append(startCase.activity.Dependents, "A")
 	activityCases := make(map[string]*ActivityCase)
 	for queueCase.Len() > 0 {
 		element := queueCase.Front()
 		currentCase := element.Value.(*ActivityCase)
 		queueCase.Remove(element)
-		_, exist := activityCases[currentCase.activity.Code]
+		existCase, exist := activityCases[currentCase.activity.Code]
+		if exist && currentCase != existCase {
+			continue
+		}
 		if !exist {
 			activityCases[currentCase.activity.Code] = currentCase
 		} else {
@@ -141,22 +144,31 @@ func PERT(activityNetwork map[string]*Activity) {
 		//check parent
 		pass := true
 		if len(currentCase.activity.Dependents) > 0 {
+			maxEF := 0
 			for _, dependent := range currentCase.activity.Dependents {
 				parent, exist := activityCases[dependent]
 				if !exist || parent.EF == -1{
 					pass = false
 					break
 				}
+				if maxEF < parent.EF {
+					maxEF = parent.EF
+				}
 			}
+			currentCase.ES = maxEF
 		} else { // means it start
 			currentCase.ES = 0
 		}
 
 		if pass { //branching
 			currentCase.EF = currentCase.ES + currentCase.Duration
+			fmt.Println(currentCase.activity.Code, currentCase.activity.Dependents , currentCase.ES, currentCase.Duration, currentCase.EF)
+			for _, edge := range currentCase.activity.Edges {
+				newCase := &ActivityCase{activityNetwork[edge.Dest], -1, activityNetwork[edge.Dest].Duration, -1, -1, -1, -1}
+				queueCase.PushBack(newCase)
+			}
 		} else { //revert
 			queueCase.PushBack(currentCase)
 		}
-		fmt.Println(currentCase.activity.Code)
 	}
 }
