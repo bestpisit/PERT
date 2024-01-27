@@ -1,47 +1,31 @@
-package main
+package pert
 
 import (
 	"container/list"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"os"
+	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 type Activity struct {
-	Code         string
-	Desc         string
-	Edges        []Edge
-	Dependencies []Activity
-	Dependents   []string
-	Duration     int
+	Code         string     `json:"Code"`
+	Desc         string     `json:"Desc"`
+	Edges        []Edge     `json:"Edges"`
+	Dependencies []Activity `json:"Dependencies"`
+	Dependents   []string   `json:"Dependents"`
+	Duration     int        `json:"Duration"`
 }
 
 type Edge struct {
-	Src  string
-	Dest string
+	Src  string `json:"Src"`
+	Dest string `json:"Dest"`
 }
 
-func main() {
-	fmt.Println("Loading project activities")
-	jsonFile, err := os.Open("BuildingAHouse.json")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer jsonFile.Close()
-
-	fmt.Println("Project activities loaded")
-
-	byteValue, err := ioutil.ReadAll(jsonFile)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
+func PertHandler(c *gin.Context) {
 	var activities []Activity
-	if err := json.Unmarshal(byteValue, &activities); err != nil {
-		fmt.Println(err)
+	if err := c.ShouldBindJSON(&activities); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -110,10 +94,17 @@ func main() {
 		activityNetwork[key].Edges = append(activityNetwork[key].Edges, newEdge)
 	}
 	fmt.Println(edges)
-	PERT(activityNetwork)
+
+	pertData := PERT(activityNetwork)
+	jsonPERT, errr := json.Marshal(pertData)
+	if errr != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Activities processed", "data": pertData, "json": jsonPERT})
 }
 
-type ActivityCase struct {
+type activityCase struct {
 	activity *Activity
 	ES       int
 	Duration int
@@ -123,14 +114,14 @@ type ActivityCase struct {
 	LF       int
 }
 
-func PERT(activityNetwork map[string]*Activity) {
+func PERT(activityNetwork map[string]*Activity) map[string]*activityCase {
 	queueCase := list.New()
-	startCase := &ActivityCase{activityNetwork["Start"], -1, activityNetwork["Start"].Duration, -1, -1, -1, -1}
+	startCase := &activityCase{activityNetwork["Start"], -1, activityNetwork["Start"].Duration, -1, -1, -1, -1}
 	queueCase.PushBack(startCase)
-	activityCases := make(map[string]*ActivityCase)
+	activityCases := make(map[string]*activityCase)
 	for queueCase.Len() > 0 {
 		element := queueCase.Front()
-		currentCase := element.Value.(*ActivityCase)
+		currentCase := element.Value.(*activityCase)
 		queueCase.Remove(element)
 		existCase, exist := activityCases[currentCase.activity.Code]
 		if exist && currentCase != existCase {
@@ -147,7 +138,7 @@ func PERT(activityNetwork map[string]*Activity) {
 			maxEF := 0
 			for _, dependent := range currentCase.activity.Dependents {
 				parent, exist := activityCases[dependent]
-				if !exist || parent.EF == -1{
+				if !exist || parent.EF == -1 {
 					pass = false
 					break
 				}
@@ -159,16 +150,16 @@ func PERT(activityNetwork map[string]*Activity) {
 		} else { // means it start
 			currentCase.ES = 0
 		}
-
 		if pass { //branching
 			currentCase.EF = currentCase.ES + currentCase.Duration
-			fmt.Println(currentCase.activity.Code, currentCase.activity.Dependents , currentCase.ES, currentCase.Duration, currentCase.EF)
+			fmt.Println(currentCase.activity.Code, currentCase.activity.Dependents, currentCase.ES, currentCase.Duration, currentCase.EF)
 			for _, edge := range currentCase.activity.Edges {
-				newCase := &ActivityCase{activityNetwork[edge.Dest], -1, activityNetwork[edge.Dest].Duration, -1, -1, -1, -1}
+				newCase := &activityCase{activityNetwork[edge.Dest], -1, activityNetwork[edge.Dest].Duration, -1, -1, -1, -1}
 				queueCase.PushBack(newCase)
 			}
 		} else { //revert
 			queueCase.PushBack(currentCase)
 		}
 	}
+	return activityCases
 }
