@@ -1,0 +1,11 @@
+version: "1.0"
+
+services:
+  frontend:
+    image: bestpisit/pert:frontend
+    ports:
+      - 80:80
+  backend:
+    image: bestpisit/pert:backend
+    ports:
+      - 8080:8080
