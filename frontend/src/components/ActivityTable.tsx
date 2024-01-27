@@ -18,7 +18,7 @@ const ActivityTable: React.FC = () => {
     const [respond, setResponse] = useState<string>();
 
     const handleSend = () => {
-        axios.post('/api/pert', activities)
+        axios.post('http://localhost:8080/pert', activities)
             .then(response => setResponse(response.data?.data))
             .catch(error => console.error('There was an error!', error));
     }
