@@ -12,7 +12,7 @@ const ActivityTable: React.FC = () => {
         {
             "Code": "C",
             "Duration": 4,
-            "Dependents": ["A","S"]
+            "Dependents": ["A", "S"]
         },
         {
             "Code": "E",
@@ -32,7 +32,7 @@ const ActivityTable: React.FC = () => {
         {
             "Code": "P",
             "Duration": 6,
-            "Dependents": ["C","S"]
+            "Dependents": ["C", "S"]
         },
         {
             "Code": "S",
@@ -47,7 +47,7 @@ const ActivityTable: React.FC = () => {
         {
             "Code": "U",
             "Duration": 3,
-            "Dependents": ["E","K","P"]
+            "Dependents": ["E", "K", "P"]
         }
     ]);
     const [respond, setResponse] = useState<string>();
@@ -62,6 +62,24 @@ const ActivityTable: React.FC = () => {
         const updatedActivities = [...activities];
         updatedActivities[index] = { ...updatedActivities[index], [key]: value };
         setActivities(updatedActivities);
+    };
+
+    const handleFileChange = (e: React.FormEvent<HTMLInputElement>) => {
+        const fileReader = new FileReader();
+        const file = e.currentTarget.files;
+        if (file && file[0]) {
+            fileReader.readAsText(file[0], "UTF-8");
+            fileReader.onload = e => {
+                const jsonText = e.target?.result;
+                if (typeof jsonText === 'string') {
+                    const activitiesData: Activity[] = JSON.parse(jsonText);
+                    setActivities(activitiesData);
+                }
+            };
+            fileReader.onerror = e => {
+                console.error("Error reading file:", e);
+            };
+        }
     };
 
     return (
@@ -96,6 +114,7 @@ const ActivityTable: React.FC = () => {
                     ))}
                 </tbody>
             </table>
+            <input type='file' onChange={handleFileChange} />
             <button onClick={handleSend}>Send</button>
             <p>{JSON.stringify(respond)}</p>
         </>
