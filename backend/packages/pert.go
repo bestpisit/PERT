@@ -87,7 +87,7 @@ func PertHandler(c *gin.Context) {
 			break
 		}
 	}
-	for key, _ := range endActivities {
+	for key := range endActivities {
 		newEdge := Edge{key, "End"}
 		edges = append(edges, newEdge)
 		activityNetwork["End"].Dependents = append(activityNetwork["End"].Dependents, key)

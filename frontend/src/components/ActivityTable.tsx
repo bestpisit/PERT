@@ -6,13 +6,48 @@ const ActivityTable: React.FC = () => {
     const [activities, setActivities] = useState<Activity[]>([
         {
             "Code": "A",
-            "Duration": 8,
+            "Duration": 3,
+            "Dependents": ["T"]
+        },
+        {
+            "Code": "C",
+            "Duration": 4,
+            "Dependents": ["A","S"]
+        },
+        {
+            "Code": "E",
+            "Duration": 5,
+            "Dependents": ["C"]
+        },
+        {
+            "Code": "K",
+            "Duration": 11,
+            "Dependents": ["A"]
+        },
+        {
+            "Code": "O",
+            "Duration": 3,
             "Dependents": []
         },
         {
-            "Code": "B",
+            "Code": "P",
+            "Duration": 6,
+            "Dependents": ["C","S"]
+        },
+        {
+            "Code": "S",
+            "Duration": 2,
+            "Dependents": ["T"]
+        },
+        {
+            "Code": "T",
+            "Duration": 7,
+            "Dependents": ["O"]
+        },
+        {
+            "Code": "U",
             "Duration": 3,
-            "Dependents": ["A"]
+            "Dependents": ["E","K","P"]
         }
     ]);
     const [respond, setResponse] = useState<string>();
