@@ -1,0 +1,50 @@
+[
+    {
+        "Code": "wood",
+        "Desc": "Flooring",
+        "Duration": 4,
+        "Dependents": []
+    },
+    {
+        "Code": "brick",
+        "Desc": "Positioning doors",
+        "Duration": 4,
+        "Dependents": []
+    },
+    {
+        "Code": "wheat",
+        "Desc": "Plumbing",
+        "Duration": 3,
+        "Dependents": ["road"]
+    },
+    {
+        "Code": "road",
+        "Desc": "Electricity connecting",
+        "Duration": 3,
+        "Dependents": ["wood","brick"]
+    },
+    {
+        "Code": "sheep",
+        "Desc": "Building wall",
+        "Duration": 1,
+        "Dependents": []
+    },
+    {
+        "Code": "house",
+        "Desc": "Building ceiling",
+        "Duration": 1,
+        "Dependents": ["road","sheep","wheat"]
+    },
+    {
+        "Code": "stone",
+        "Desc": "Building roof",
+        "Duration": 3,
+        "Dependents": ["road"]
+    },
+    {
+        "Code": "city",
+        "Desc": "Installing doors and windows",
+        "Duration": 1,
+        "Dependents": ["house","stone","wheat"]
+    }
+]
